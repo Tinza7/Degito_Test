@@ -23,11 +23,9 @@ export default function App() {
 
   function handleStatusChange(projectId, newStatus) {
     updateStatus(projectId, newStatus).then(() => {
-      const project = projects.find((p) => p.id === projectId);
-      if (project) {
-        project.status = newStatus;
-      }
-      setProjects(projects);
+      setProjects(
+        projects.map((p) => (p.id === projectId ? { ...p, status: newStatus } : p))
+      );
     });
   }
 
@@ -95,15 +93,9 @@ export default function App() {
                 <td>
                   <span className="status-badge">{p.status}</span>
                   <select
-                    defaultValue=""
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        handleStatusChange(p.id, e.target.value);
-                      }
-                      e.target.value = "";
-                    }}
+                    value={p.status}
+                    onChange={(e) => handleStatusChange(p.id, e.target.value)}
                   >
-                    <option value="">Change status…</option>
                     {STATUS_OPTIONS.map((s) => (
                       <option key={s} value={s}>
                         {s}
