@@ -10,16 +10,23 @@ export default function App() {
   const [projects, setProjects] = useState([]);
   const [clients, setClients] = useState([]);
   const [newProject, setNewProject] = useState({ name: "", client_id: "" });
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchProjects();
     fetchClients();
   }, []);
 
-  function fetchProjects() {
-    getProjects()
+  function fetchProjects(search = searchQuery) {
+    getProjects(search)
       .then(setProjects)
       .catch((err) => setErrorMessage(err.message));
+  }
+
+  function handleSearchChange(e) {
+    const value = e.target.value;
+    setSearchQuery(value);
+    fetchProjects(value);
   }
 
   function fetchClients() {
@@ -63,6 +70,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
+
         {errorMessage && (
           <div style={{
             background: "#ffebee",
@@ -111,7 +119,16 @@ export default function App() {
       </section>
 
       <section className="project-list">
-        <h2>Projects</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <h2>Projects</h2>
+          <input
+            type="text"
+            placeholder="🔍 Search by client name..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            style={{ width: "250px" }}
+          />
+        </div>
         <table>
           <thead>
             <tr>

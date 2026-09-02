@@ -5,9 +5,12 @@ const router = express.Router();
 
 // GET /api/projects
 // Returns all projects with their client name.
+// GET /api/projects?client=...
 router.get("/", async (req, res) => {
   try {
-    const result = await pool.query(`
+    const { client } = req.query;
+
+    let queryText = `
       SELECT
         p.id,
         p.name,
@@ -16,14 +19,25 @@ router.get("/", async (req, res) => {
         c.name AS client_name
       FROM projects p
       JOIN clients c ON c.id = p.client_id
-      ORDER BY p.id ASC
-    `);
+    `;
+    const queryParams = [];
+
+    // ถ้ามีการส่งคำค้นหาชื่อลูกค้ามา ให้เพิ่มเงื่อนไข WHERE
+    if (client && client.trim() !== "") {
+      queryParams.push(`%${client.trim()}%`);
+      queryText += ` WHERE c.name ILIKE $1`;
+    }
+
+    queryText += ` ORDER BY p.id ASC`;
+
+    const result = await pool.query(queryText, queryParams);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch projects" });
   }
 });
+
 
 // POST /api/projects
 // Creates a new project.
@@ -72,5 +86,7 @@ router.patch("/:id/status", async (req, res) => {
     res.status(500).json({ error: "Failed to update project" });
   }
 });
+
+
 
 module.exports = router;
