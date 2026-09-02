@@ -3,7 +3,10 @@ import { getProjects, getClients, createProject, updateStatus } from "./api";
 
 const STATUS_OPTIONS = ["planning", "in_progress", "completed"];
 
+
+
 export default function App() {
+  const [errorMessage, setErrorMessage] = useState(null);
   const [projects, setProjects] = useState([]);
   const [clients, setClients] = useState([]);
   const [newProject, setNewProject] = useState({ name: "", client_id: "" });
@@ -14,40 +17,65 @@ export default function App() {
   }, []);
 
   function fetchProjects() {
-    getProjects().then(setProjects);
+    getProjects()
+      .then(setProjects)
+      .catch((err) => setErrorMessage(err.message));
   }
 
   function fetchClients() {
-    getClients().then(setClients);
+    getClients()
+      .then(setClients)
+      .catch((err) => setErrorMessage(err.message));
   }
 
   function handleStatusChange(projectId, newStatus) {
-    updateStatus(projectId, newStatus).then(() => {
-      setProjects(
-        projects.map((p) => (p.id === projectId ? { ...p, status: newStatus } : p))
-      );
-    });
+    setErrorMessage(null); // เคลียร์ error เก่าก่อน
+    updateStatus(projectId, newStatus)
+      .then(() => {
+        setProjects(
+          projects.map((p) => (p.id === projectId ? { ...p, status: newStatus } : p))
+        );
+      })
+      .catch((err) => setErrorMessage(err.message));
   }
 
   function handleCreate(e) {
     e.preventDefault();
+    setErrorMessage(null);
 
     if (!newProject.name.trim() || !newProject.client_id) {
-      alert("กรุณากรอกชื่อโปรเจกต์และเลือกลูกค้าให้ครบถ้วน");
+      setErrorMessage("กรุณากรอกชื่อโปรเจกต์และเลือกลูกค้าให้ครบถ้วน");
       return;
     }
+
     createProject({
-      name: newProject.name,
+      name: newProject.name.trim(),
       client_id: Number(newProject.client_id),
-    }).then(() => {
-      setNewProject({ name: "", client_id: "" });
-      fetchProjects();
-    });
+    })
+      .then(() => {
+        setNewProject({ name: "", client_id: "" });
+        fetchProjects();
+      })
+      .catch((err) => setErrorMessage(err.message));
   }
+
 
   return (
     <div className="app">
       <header className="app-header">
+        {errorMessage && (
+          <div style={{
+            background: "#ffebee",
+            color: "#c62828",
+            padding: "12px 16px",
+            borderRadius: "6px",
+            marginBottom: "20px",
+            border: "1px solid #ef9a9a"
+          }}>
+            ⚠️ {errorMessage}
+          </div>
+        )}
+
         <h1>Client Project Tracker</h1>
         <p>Internal tool for tracking active client projects.</p>
       </header>
