@@ -31,6 +31,11 @@ export default function App() {
 
   function handleCreate(e) {
     e.preventDefault();
+
+    if (!newProject.name.trim() || !newProject.client_id) {
+      alert("กรุณากรอกชื่อโปรเจกต์และเลือกลูกค้าให้ครบถ้วน");
+      return;
+    }
     createProject({
       name: newProject.name,
       client_id: Number(newProject.client_id),
@@ -53,12 +58,14 @@ export default function App() {
           <input
             type="text"
             placeholder="Project name"
+            required
             value={newProject.name}
             onChange={(e) =>
               setNewProject({ ...newProject, name: e.target.value })
             }
           />
           <select
+            required
             value={newProject.client_id}
             onChange={(e) =>
               setNewProject({ ...newProject, client_id: e.target.value })

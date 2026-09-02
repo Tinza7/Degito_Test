@@ -31,6 +31,11 @@ router.post("/", async (req, res) => {
   try {
     const { name, client_id, status } = req.body;
 
+
+    if (!name || !client_id) {
+      return res.status(400).json({ error: "Name and client_id are required" });
+    }
+
     const result = await pool.query(
       `INSERT INTO projects (name, client_id, status)
        VALUES ($1, $2, $3)
